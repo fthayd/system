@@ -1,0 +1,96 @@
+LD	?= ld
+AR	?= ar
+RANLIB	?= ranlib
+CC	?= cc
+CPP	?= c++
+STRIP	?= strip
+UPX_BIN	?= upx
+QMAKE	?= qmake
+
+ifneq ($(V)$(VERBOSE),)
+	DISP	:= ver
+	Q	:=
+	OUT	:=
+else
+	DISP	:= pur
+	MAKE	:= ${MAKE} --no-print-directory
+	Q	:= @
+	OUT	:= 1>/dev/null
+endif
+
+show_objs		= $(addprefix $(DIR),$@)
+pur_disp_c		= echo "  CC	$(show_objs)"
+pur_disp_cpp		= echo "  CPP	$(show_objs)"
+pur_disp_ld		= echo "  LD ->	$(show_objs)"
+pur_disp_ar		= echo "  AR ->	$(show_objs)"
+pur_disp_so		= echo "  SO ->	$(show_objs)"
+pur_disp_clean		= echo "  CLEAN	$(patsubst %.clean,%,$@)"
+pur_disp_strip		= echo "  STRIP	$<"
+pur_disp_install	= echo "  INSTL	$< -> $(subst $(firstword $^),,$^)"
+pur_disp_install_upx	= echo "  UPX & INSTALL	$< -> $(subst $(firstword $^),,$^)"
+pur_disp_doxygen	= echo "  DOXYGEN	$<"
+pur_disp_qmake		= echo "  QMAKE	$<"
+pur_disp_make		= echo "  MAKE	$< -> $@"
+ver_disp_c		= echo $(cmd_c)
+ver_disp_cpp		= echo $(cmd_cpp)
+ver_disp_ld		= echo $(cmd_ld)
+ver_disp_ar		= echo $(cmd_ar)
+ver_disp_so		= echo $(cmd_so)
+ver_disp_clean		= echo $(cmd_clean)
+ver_disp_strip		= echo $(cmd_strip)
+ver_disp_install	= echo $(cmd_install)
+ver_disp_install_upx	= echo $(cmd_install_upx)
+ver_disp_doxygen	= echo $(cmd_doxygen)
+ver_disp_qmake		= echo $(cmd_qmake)
+ver_disp_make		= echo $(cmd_make)
+disp_c			= $($(DISP)_disp_c)
+disp_cpp		= $($(DISP)_disp_cpp)
+disp_ld			= $($(DISP)_disp_ld)
+disp_ar			= $($(DISP)_disp_ar)
+disp_so			= $($(DISP)_disp_so)
+disp_clean		= $($(DISP)_disp_clean)
+disp_strip		= $($(DISP)_disp_strip)
+disp_install		= $($(DISP)_disp_install)
+disp_install_upx	= $($(DISP)_disp_install_upx)
+disp_doxygen		= $($(DISP)_disp_doxygen)
+disp_qmake		= $($(DISP)_disp_qmake)
+disp_make		= $($(DISP)_disp_make)
+cmd_c			= $(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+cmd_cpp			= $(CPP) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
+cmd_ld			= $(CPP) -o $@ $(patsubst %.build,,$^) $(CFLAGS) $(LDFLAGS)
+cmd_ar			= $(AR) rcs $@ $^
+cmd_so			= $(CC) -shared -Wl,-soname,$@ -o $@ $(CFLAGS) $(LDFLAGS) $(patsubst %.mk,,$^)
+cmd_clean		= $(RM) $(patsubst %.clean,%,$@)
+cmd_strip		= $(STRIP) $<
+cmd_install		= cp -f $^
+cmd_install_upx		= cp -f $^; $(UPX_BIN) --ultra-brute $(subst $(firstword $^),,$^)/$< >/dev/null
+cmd_doxygen		= doxygen $<
+cmd_qmake		= $(QMAKE) -o $@ $<
+cmd_smake		= $(MAKE) -C $(dir $<) -f $(notdir $<) $@ $(OUT)
+cmd_make		= $(MAKE) -C $(dir $<) -f $(notdir $<) $@
+do_c			= @$(disp_c)		; $(cmd_c)
+#do_c			= @$(disp_cpp)		; $(cmd_cpp)
+do_cpp			= @$(disp_cpp)		; $(cmd_cpp)
+do_ld			= @$(disp_ld)		; $(cmd_ld)
+do_ar			= @$(disp_ar)		; $(cmd_ar)
+do_so			= @$(disp_so)		; $(cmd_so)
+do_clean		= @$(disp_clean)	; $(cmd_clean)
+#do_strip		= @true
+do_strip		= @$(disp_strip)	; $(cmd_strip)
+do_install		= @$(disp_install)	; $(cmd_install)
+#do_install_upx		= -@$(disp_install_upx)	; $(cmd_install_upx)
+do_install_upx		= @$(disp_install)	; $(cmd_install)
+do_doxygen		= @$(disp_doxygen)	; $(cmd_doxygen)
+do_qmake		= @$(disp_qmake)	; $(cmd_qmake)
+do_smake		= @$(disp_make)		; $(cmd_smake)
+do_make			= @$(disp_make)		; $(cmd_make)
+
+
+%.o: %.c
+	$(do_c)
+
+%.o: %.cpp
+	$(do_cpp)
+
+%.clean:
+	$(do_clean)

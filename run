@@ -1,0 +1,5 @@
+#!/usr/bin/expect
+
+send "run\n"
+
+exit 0
